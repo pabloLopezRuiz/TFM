@@ -1,0 +1,6 @@
+daty/
+fig/
+__pycache__/
+tfmVenv/
+
+test.py
