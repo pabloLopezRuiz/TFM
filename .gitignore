@@ -3,4 +3,12 @@ fig/
 __pycache__/
 tfmVenv/
 
+*.h5ad
+*.h5mu
+*.h5Seurat
+*.h5seurat
+*.rds
+*.RData*
+*.Rhistory
+
 test.py
