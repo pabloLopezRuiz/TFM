@@ -15,6 +15,7 @@ df_counts_t = pd.read_pickle("data-taylor/df_counts.pkl")
 # df_ng_nc_time_t = pd.read_pickle("data-taylor/df_ng_nc.pkl")
 
 # data-gao load
+df_n2_g = pd.read_pickle("data-gao/df_n2.pkl")
 # No hace falta porque está integrado en df_ng_nc_time_rt
 # df_counts_g = pd.read_pickle("data-gao/df_gao_srt.pkl")
 
@@ -112,7 +113,7 @@ app_ui = ui.page_fluid(
         ui.p("Información obtenida con el mismo procedimiento que en Roux. Cantidad de categorías de neuronas encontradas: 130")
     ),
     ui.card(
-        ui.card_header("Comparación entre los datasets de Taylor y el day 1 de Roux"),
+        ui.card_header("Comparación entre los datasets de Taylor (Adult), el day 1 de Roux y el day 1 de Gao"),
         ui.input_switch("specifict3", "Show only neurons", value=False),
         ui.input_selectize(  
             "vart",  
@@ -124,7 +125,11 @@ app_ui = ui.page_fluid(
     ),
 
 
-
+    ui.card(
+        ui.h1("Dataset de Gao - Adult hermaphrodite", style="text-align: center;"),
+        ui.a("Enlace de descarga", href="about::blank"),
+        ui.p("Dataset con datos single-nuclei de todo el organismo de C.elegans, cuentan con 4 timepoints (day 1, day 6, day 12 y day 14)"),
+    ),
 
     ui.card(
         ui.h5("Violin plot"),
@@ -135,6 +140,18 @@ app_ui = ui.page_fluid(
             {"n_genes": "Genes", "n_counts": "Counts"},  
         ), 
         output_widget("gao_ng_nc_tx_violin"),
+
+        full_screen=True,
+    ),
+    ui.card(
+        ui.card_header("Media del número de conteos y features para las 3 categorías indicadas para WT (N2) en el day 1"),
+        output_widget("gao_wt_comp_barp"),
+        ui.p(
+            "Con el fin de saber si todas las categorías marcadas como N2 se pueden unir en una misma categría" \
+            " con vistas al análisis, comparo los counts y features medios observados en las tres categrías marcadas." \
+            " N2 y N2OP son muy parecidas (en la variable genotype, aparecen bajo el mismo nombre (N2)) mientras que" \
+            " hay diferencias entre estas y N2HT"
+        ),
 
         full_screen=True,
     ),
@@ -222,7 +239,7 @@ def server(input, output, session):
 
         fig1 = ex.bar(
             df1, 
-            x="Cell.type", 
+            x="cell_type", 
             y="count"
             )
         fig1.update_traces(marker_color=df1["is_neuron"].map({True: "red", False: "gray"}))
@@ -274,6 +291,12 @@ def server(input, output, session):
             df3 = dfg
             title = "Número de " + str_var + " por célula para cada timepoint"
 
+# ---
+# podria hacer una tabla
+# que represente algún 
+# estadístico como median
+# ---
+
         fig3 = ex.violin(
             df3,
             x="timepoint",
@@ -286,7 +309,23 @@ def server(input, output, session):
         fig3.update_layout(showlegend=False)
 
         return fig3
-     
+    
+    @render_widget
+    def gao_wt_comp_barp():
+        fig_n2 = go.Figure()
+        fig_n2.add_trace(go.Bar(
+            x = df_n2_g["n2_type"],
+            y = df_n2_g["nCount_RNA"],
+            name="count",
+            marker_color = "green",
+            ))
+        fig_n2.add_trace(go.Bar(
+            x = df_n2_g["n2_type"],
+            y = df_n2_g["nFeature_RNA"],
+            name="features",
+            marker_color = "red",
+            ))
 
+        return fig_n2
 
 app = App(app_ui, server)
